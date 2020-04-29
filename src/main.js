@@ -2,26 +2,33 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 
 const countdown = require('./countdown')
 
-let mainWindow;
+// let mainWindow;
+const windows = []
 
 app.on('ready', () => {
-    mainWindow = new BrowserWindow({
-        height: 400,
-        width: 400 
-    });
+    [1, 2, 3].forEach(() => {
+        let mainWindow = new BrowserWindow({
+            height: 400,
+            width: 400 
+        });
 
-    mainWindow.loadURL(`file://${__dirname}/countdown.html`);
+        mainWindow.loadURL(`file://${__dirname}/countdown.html`);
 
-    // countdown();
+        // countdown();
 
-    mainWindow.on('closed', () => {
-        mainWindow = null;
+        mainWindow.on('closed', () => {
+            mainWindow = null;
+        })
+
+        windows.push(mainWindow);
     })
 });
 
 ipcMain.on('countdown-start', () => {
     console.log('caught it!')
     countdown(count => {
-        mainWindow.webContents.send('countdown', count)
+        windows.forEach(win => {
+            win.webContents.send('countdown', count)
+        });
     });
 })
