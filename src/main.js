@@ -1,34 +1,39 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-
-const countdown = require('./countdown')
-
-// let mainWindow;
-const windows = []
+const { app, BrowserWindow, Menu, globalShortcut, dialog } = require('electron');
 
 app.on('ready', () => {
-    [1, 2, 3].forEach(() => {
-        let mainWindow = new BrowserWindow({
-            height: 400,
-            width: 400 
-        });
+    // globalShortcut.register('CommandOrControl+Q', () => {
+    //     dialog.showMessageBox({
+    //       type: 'info',
+    //       message: 'Success!',
+    //       detail: 'You pressed the registered global shortcut keybinding.',
+    //       buttons: ['OK']
+    //     })
+    // })
 
-        mainWindow.loadURL(`file://${__dirname}/countdown.html`);
+    let mainWindow = new BrowserWindow()
 
-        // countdown();
+    mainWindow.loadURL('https://github.com')
 
-        mainWindow.on('closed', () => {
-            mainWindow = null;
-        })
+    const template = [
+        {
+            label: 'Die Hard',
+            submenu: [{
+                label: 'About',
+                click: () => {
+                    console.log('clicked about')
+                },
+                role: 'about', // specific for IOS only https://www.electronjs.org/docs/api/menu-item#roles
+            }, {
+                type: 'separator'
+            }, {
+                label: 'Quit',
+                click: () => { app.quit() },
+                accelerator: 'CmdOrCtrl+W',
+                role: 'close'
+            }],
+        }
+    ];
 
-        windows.push(mainWindow);
-    })
-});
-
-ipcMain.on('countdown-start', () => {
-    console.log('caught it!')
-    countdown(count => {
-        windows.forEach(win => {
-            win.webContents.send('countdown', count)
-        });
-    });
+    const menu = Menu.buildFromTemplate(template);
+    Menu.setApplicationMenu(menu);
 })

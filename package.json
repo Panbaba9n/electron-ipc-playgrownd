@@ -1,5 +1,6 @@
 {
   "name": "dev.electron-ipc-demo",
+  "productName": "Menu Demo",
   "version": "1.0.0",
   "description": "",
   "main": "src/main.js",
