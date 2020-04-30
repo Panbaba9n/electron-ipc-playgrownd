@@ -1,34 +1,21 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, Tray, Menu } = require('electron');
+const path = require('path');
 
-const countdown = require('./countdown')
 
-// let mainWindow;
-const windows = []
 
 app.on('ready', () => {
-    [1, 2, 3].forEach(() => {
-        let mainWindow = new BrowserWindow({
-            height: 400,
-            width: 400 
-        });
+    const tray = new Tray(path.join('src', 'assets', '16.png'));
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: 'Wow',
+            click: () => console.log('wow'),
+        },
+        {
+            label: 'Awesome',
+            click: () => console.log('awesome'),
+        }
+    ]);
 
-        mainWindow.loadURL(`file://${__dirname}/countdown.html`);
-
-        // countdown();
-
-        mainWindow.on('closed', () => {
-            mainWindow = null;
-        })
-
-        windows.push(mainWindow);
-    })
+    tray.setContextMenu(contextMenu);
+    tray.setToolTip('My great app'); // works on IOS
 });
-
-ipcMain.on('countdown-start', () => {
-    console.log('caught it!')
-    countdown(count => {
-        windows.forEach(win => {
-            win.webContents.send('countdown', count)
-        });
-    });
-})
