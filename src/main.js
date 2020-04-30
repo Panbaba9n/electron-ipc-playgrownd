@@ -1,34 +1,24 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut } = require('electron');
 
-const countdown = require('./countdown')
-
-// let mainWindow;
-const windows = []
+let mainWindow;
 
 app.on('ready', () => {
-    [1, 2, 3].forEach(() => {
-        let mainWindow = new BrowserWindow({
-            height: 400,
-            width: 400 
-        });
+    mainWindow = new BrowserWindow({
+        width: 0,
+        heigth: 0,
+        resizeable: false,
+        frame: false
+    });
 
-        mainWindow.loadURL(`file://${__dirname}/countdown.html`);
+    mainWindow.openDevTools();
 
-        // countdown();
+    mainWindow.loadURL(`file://${__dirname}/capture.html`)
 
-        mainWindow.on('closed', () => {
-            mainWindow = null;
-        })
+    mainWindow.on('close', () => {
+        mainWindow = null;
+    });
 
-        windows.push(mainWindow);
+    globalShortcut.register('Ctrl+Alt+S', () => {
+        mainWindow.webContents.send('capture', app.getPath('pictures'));
     })
 });
-
-ipcMain.on('countdown-start', () => {
-    console.log('caught it!')
-    countdown(count => {
-        windows.forEach(win => {
-            win.webContents.send('countdown', count)
-        });
-    });
-})
