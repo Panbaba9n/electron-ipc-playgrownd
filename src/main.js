@@ -1,34 +1,39 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, Tray, Menu, clipboard } = require('electron');
+const path = require('path');
 
-const countdown = require('./countdown')
+const STACK_SIZE = 5;
 
-// let mainWindow;
-const windows = []
+function addToStack(item, stack) {
+    return [item].concat(stack.length >= STACK_SIZE ? stack.slice(0, stack.length - 1) : stack)
+}
+
+function checkClipboardForChange(clipboard, onChange) {
+    let cache = clipboard.readText();
+    let latest;
+
+    setInterval(() => {
+        latest = clipboard.readText();
+        if (latest !==cache) {
+            cache = latest;
+            onChange(cache);
+        }
+    }, 1000);
+}
 
 app.on('ready', () => {
-    [1, 2, 3].forEach(() => {
-        let mainWindow = new BrowserWindow({
-            height: 400,
-            width: 400 
-        });
+    let stack = [];
+    const tray = new Tray(path.join('src', 'assets', '16.png'));
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: '<Empty>',
+            enabled: false
+        }
+    ]);
 
-        mainWindow.loadURL(`file://${__dirname}/countdown.html`);
+    tray.setContextMenu(contextMenu);
 
-        // countdown();
-
-        mainWindow.on('closed', () => {
-            mainWindow = null;
-        })
-
-        windows.push(mainWindow);
-    })
-});
-
-ipcMain.on('countdown-start', () => {
-    console.log('caught it!')
-    countdown(count => {
-        windows.forEach(win => {
-            win.webContents.send('countdown', count)
-        });
+    checkClipboardForChange(clipboard, (text) => {
+        stack = addToStack(text, stack);
+        console.log('stack', stack)
     });
-})
+});
